@@ -5,11 +5,32 @@
 #include <array>
 #include "raycaster.hpp"
 #include "32blit.hpp"
+#include "engine/profiler.hpp"
 
 using namespace blit;
 
 const uint16_t screen_width = 160;
 const uint16_t screen_height = 120;
+
+
+Profiler 	   g_profiler; // global uRunningAverageSize and uRunningAverageSpan could be set here.
+ProfilerProbe *g_pRenderSky;
+ProfilerProbe *g_pRenderWorld;
+ProfilerProbe *g_pRenderSprites;
+
+uint32_t g_uSize = 2;
+uint32_t g_uSizeMax	= screen_height - 1;
+uint32_t g_uSizeMin	= 2;
+uint32_t g_uSizeChange = 1;
+
+bool g_bGraphEnabled   = true;
+bool g_bLabelsEnabled  = true;
+bool g_bDisplayHistory = true;
+bool g_bUseGlobalTime  = true;
+
+uint8_t g_uRows = 5;
+uint8_t g_uPage = 1;
+
 
 uint8_t __m[160 * 120];
 
@@ -97,9 +118,31 @@ void get_random_empty_tile_location(Point &pos) {
 	}
 }
 
+void SetupMetrics(void)
+{
+	g_profiler.SetupGraphElement(Profiler::dmCur, g_pRenderSky, g_bGraphEnabled, Pen(0,255,0));
+	g_profiler.SetupGraphElement(Profiler::dmAvg, g_pRenderWorld, g_bGraphEnabled, Pen(0,0,255));
+	g_profiler.SetupGraphElement(Profiler::dmMax, g_pRenderSprites, g_bGraphEnabled, Pen(255,0,0));
+}
+
 /* setup */
 void init() {
 	set_screen_mode(ScreenMode::lores);
+
+
+	g_profiler.SetDisplaySize(screen_width, screen_height);
+	g_profiler.SetRows(g_uRows);
+	g_profiler.SetAlpha(200);
+	g_profiler.DisplayHistory(g_bDisplayHistory);
+
+	g_pRenderSky 		= g_profiler.AddProbe("Sky", 100);
+	g_pRenderWorld 		= g_profiler.AddProbe("World", 100);
+	g_pRenderSprites 	= g_profiler.AddProbe("Sprites", 100);
+
+
+	// enable metrics
+	SetupMetrics();
+
 	//printf("Init: STARTED\n");
 	//engine::render = ::render;
 	//engine::update = ::update;
@@ -322,14 +365,18 @@ void render(uint32_t time) {
 	screen.clear();
 
 	//printf("Render: SKY\n");
+	g_pRenderSky->Start();
 	render_sky();
+	g_pRenderSky->StoreElapsedUs();
 
 	//printf("Render: STARS\n");
 	render_stars();
 
 	// TODO ???		
 	//printf("Render: WORLD\n");
+	g_pRenderWorld->Start();
 	render_world(time);
+	g_pRenderWorld->StoreElapsedUs();
 	/*
 	screen.mask = &m;
 	blur(5);
@@ -357,7 +404,9 @@ void render(uint32_t time) {
 
 
 	//printf("Render: SPRITES\n");
+	g_pRenderSprites->Start();
 	render_sprites(time);
+	g_pRenderSprites->StoreElapsedUs();
 
 	// draw bug spray    
 	//rect ss_spray_rect(40, 160 - 32, 24, 32);
@@ -404,6 +453,12 @@ void render(uint32_t time) {
 		screen.rectangle(Rect(i * 3 + 1, 117, 2, 2));
 	}
 	//printf("Render: FINISHED\n");
+
+	// display the overlay
+  	g_pRenderSprites->SetGraphTimeUsToMax();
+  	g_pRenderWorld->SetGraphTimeUsToMax();
+  	g_pRenderSky->SetGraphTimeUsToMax();
+	g_profiler.DisplayProbeOverlay(g_uPage);
 }
 
 void render_sky() {
