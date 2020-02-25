@@ -52,15 +52,15 @@ ITCMISR (xrw)       : ORIGIN = 0x00000000, LENGTH = 4K
 
 /*ITCMRAM (xrw)       : ORIGIN = 0x00001000, LENGTH = 58K*/
 
-MAIN_RAM (xrw)      : ORIGIN = DEFINED(FLASH_TARGET_INT) ? 0x24000000 : 0x00001000,
-                      LENGTH = DEFINED(FLASH_TARGET_INT) ? 362K : 58K
+MAIN_RAM (xrw)      : ORIGIN = DEFINED(FLASH_TARGET_INT) ? 0x00001000 : 0x24000000,
+                      LENGTH = DEFINED(FLASH_TARGET_INT) ? 58K : 362K
 
 API (rw)            : ORIGIN = 0x0000f800, LENGTH = 2K
 
 /* Flash location depends on whether we are building for internal or external flash. */
 /* This defaults to external and can be overridden on the linker command line. */
 FLASH (rx)          : ORIGIN = DEFINED(FLASH_TARGET_INT) ? 0x08000000 : 0x90000000,
-                      LENGTH = DEFINED(FLASH_TARGET_INT) ? 0x128K : 32768K
+                      LENGTH = DEFINED(FLASH_TARGET_INT) ? 128K : 32768K
 }
 
 /* Define output sections */
