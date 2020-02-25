@@ -600,24 +600,24 @@ pFunction JumpToApplication;
 void blit_switch_execution(void)
 {
   // Stop the ADC DMA
-  HAL_ADC_Stop_DMA(&hadc1);
-  HAL_ADC_Stop_DMA(&hadc3);
+  //HAL_ADC_Stop_DMA(&hadc1);
+  //HAL_ADC_Stop_DMA(&hadc3);
 
   // Stop the audio
-  HAL_TIM_Base_Stop_IT(&htim6);
-  HAL_DAC_Stop(&hdac1, DAC_CHANNEL_2);
+  //HAL_TIM_Base_Stop_IT(&htim6);
+  //HAL_DAC_Stop(&hdac1, DAC_CHANNEL_2);
 
   // stop USB
-  USBD_Stop(&hUsbDeviceHS);
+  //USBD_Stop(&hUsbDeviceHS);
   
   // Disable all the interrupts... just to be sure
-  HAL_NVIC_DisableIRQ(LTDC_IRQn);
-  HAL_NVIC_DisableIRQ(ADC_IRQn);
-  HAL_NVIC_DisableIRQ(ADC3_IRQn);
-  HAL_NVIC_DisableIRQ(DMA1_Stream0_IRQn);
-  HAL_NVIC_DisableIRQ(DMA1_Stream1_IRQn);
-  HAL_NVIC_DisableIRQ(TIM6_DAC_IRQn);
-  HAL_NVIC_DisableIRQ(OTG_HS_IRQn);
+  //HAL_NVIC_DisableIRQ(LTDC_IRQn);
+  //HAL_NVIC_DisableIRQ(ADC_IRQn);
+  //HAL_NVIC_DisableIRQ(ADC3_IRQn);
+  //HAL_NVIC_DisableIRQ(DMA1_Stream0_IRQn);
+  //HAL_NVIC_DisableIRQ(DMA1_Stream1_IRQn);
+  //HAL_NVIC_DisableIRQ(TIM6_DAC_IRQn);
+  //HAL_NVIC_DisableIRQ(OTG_HS_IRQn);
 
 	volatile uint32_t uAddr = EXTERNAL_LOAD_ADDRESS;
 	// enable qspi memory mapping if needed
@@ -625,10 +625,10 @@ void blit_switch_execution(void)
 		qspi_enable_memorymapped_mode();
 
 	/* Disable I-Cache */
-	SCB_DisableICache();
+	//SCB_DisableICache();
 
 	/* Disable D-Cache */
-	SCB_DisableDCache();
+	//SCB_DisableDCache();
 
 	/* Disable Systick interrupt */
 	SysTick->CTRL = 0;

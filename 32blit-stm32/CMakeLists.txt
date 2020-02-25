@@ -168,6 +168,14 @@ function(blit_executable_common NAME)
 	)
 endfunction()
 
+function(blit_executable_pic NAME SOURCES)
+	set_source_files_properties( ../../32blit-stm32/startup_stm32h750xx_ext.s PROPERTIES LANGUAGE CXX )
+	add_executable(${NAME} ${SOURCES} ../../32blit-stm32/startup_stm32h750xx_ext.s ${ARGN})
+	set_target_properties(${NAME} PROPERTIES LINK_FLAGS "-specs=nano.specs -fPIC -T ${MCU_LINKER_SCRIPT} ${MCU_LINKER_FLAGS_EXT}")
+	set_target_properties(${NAME} PROPERTIES LINK_DEPENDS ${MCU_LINKER_SCRIPT} SUFFIX ".elf")
+	blit_executable_common(${NAME})
+endfunction()
+
 function(blit_executable NAME SOURCES)
 	add_executable(${NAME} $<TARGET_OBJECTS:BlitHalSTM32Ext> ${SOURCES} ${ARGN})
 
