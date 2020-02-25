@@ -597,8 +597,11 @@ char *get_fr_err_text(FRESULT err){
 typedef  void (*pFunction)(void);
 pFunction JumpToApplication;
 
+typedef void(*renderFunction)(uint32_t time_ms);
+
 void blit_switch_execution(void)
 {
+  blit::api.LED.b = 0;
   // Stop the ADC DMA
   //HAL_ADC_Stop_DMA(&hadc1);
   //HAL_ADC_Stop_DMA(&hadc3);
@@ -631,17 +634,24 @@ void blit_switch_execution(void)
 	//SCB_DisableDCache();
 
 	/* Disable Systick interrupt */
-	SysTick->CTRL = 0;
+	//SysTick->CTRL = 0;
 
 	/* Initialize user application's Stack Pointer & Jump to user application */
-	JumpToApplication = (pFunction) (*(__IO uint32_t*) (EXTERNAL_LOAD_ADDRESS + 4));
-	__set_MSP(*(__IO uint32_t*) EXTERNAL_LOAD_ADDRESS);
-	JumpToApplication();
+	//JumpToApplication = (pFunction) (*(__IO uint32_t*) (EXTERNAL_LOAD_ADDRESS + 4));
+	//__set_MSP(*(__IO uint32_t*) EXTERNAL_LOAD_ADDRESS);
+	//JumpToApplication();
+
+	JumpToApplication = (pFunction) (*(__IO uint32_t*) (EXTERNAL_LOAD_ADDRESS + 12));
+  JumpToApplication();
+
+  blit::render = (renderFunction) (*(__IO uint32_t*) (EXTERNAL_LOAD_ADDRESS + 4));
+  blit::update = (renderFunction) (*(__IO uint32_t*) (EXTERNAL_LOAD_ADDRESS + 8));
 
 	/* We should never get here as execution is now on user application */
-	while(1)
+	/*while(1)
 	{
-	}
+	}*/
+  //blit::api.LED.b = 255;
 }
 
 void EnableUsTimer(void)

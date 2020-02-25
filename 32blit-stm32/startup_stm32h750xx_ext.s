@@ -25,13 +25,17 @@
   ******************************************************************************
 */
 
-
   .syntax unified
   .cpu cortex-m7
   .fpu softvfp
   .thumb
 
+.extern init
+.extern update
+.extern render
+
 .global  g_pfnVectors
+
 
 // start address for the initialization values of the .data section.
 // defined in linker script
@@ -59,7 +63,6 @@
   .weak  Reset_Handler
   .type  Reset_Handler, %function
 Reset_Handler:
-  #ldr   sp, =_estack      // set stack pointer
 
 
 // Copy the data segment initializers from flash to SRAM
@@ -93,7 +96,7 @@ LoopFillZerobss:
   bcc  FillZerobss
 
 // Call static constructors
-    bl __libc_init_array
+//    bl __libc_init_array
 // Call the application's entry point.
   bl  main
   bx  lr
@@ -106,10 +109,23 @@ LoopFillZerobss:
 *
 *******************************************************************************/
 
-   .section  .isr_vector,"a",%progbits
-  .type  g_pfnVectors, %object
-  .size  g_pfnVectors, .-g_pfnVectors
+ .section  .isr_vector,"a",%progbits
+  #.type  g_pfnVectors, %object
+  #.size  g_pfnVectors, .-g_pfnVectors
 
 g_pfnVectors:
   .word  _estack
-  .word  Reset_Handler
+  .word  render
+  .word  update
+  .word  init
+
+/*
+.weak      render
+.thumb_set render,main
+
+.weak      update
+.thumb_set update,main
+
+.weak      init
+.thumb_set init,main
+*/
