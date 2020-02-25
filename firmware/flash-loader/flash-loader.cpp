@@ -216,20 +216,20 @@ void FlashLoader::RenderFlashFile(uint32_t time)
 	if(!m_bFsInit)
 		FSInit();
 
-	uint32_t changedButtons = buttons ^ lastButtons;
+	uint32_t changedButtons = api.buttons ^ lastButtons;
 
-	bool button_a = buttons & changedButtons & Button::A;
+	bool button_a = api.buttons & changedButtons & Button::A;
 
-	bool button_up = buttons & changedButtons & Button::DPAD_UP;
-	bool button_down = buttons & changedButtons & Button::DPAD_DOWN;
+	bool button_up = api.buttons & changedButtons & Button::DPAD_UP;
+	bool button_down = api.buttons & changedButtons & Button::DPAD_DOWN;
 
 	if(time - lastRepeat > 150 || button_up || button_down) {
-		button_up = buttons & Button::DPAD_UP;
-		button_down = buttons & Button::DPAD_DOWN;
+		button_up = api.buttons & Button::DPAD_UP;
+		button_down = api.buttons & Button::DPAD_DOWN;
 		lastRepeat = time;
 	}
 
-	lastButtons = buttons;
+	lastButtons = api.buttons;
 
 	screen.pen = Pen(0,0,0);
 	screen.rectangle(Rect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT));

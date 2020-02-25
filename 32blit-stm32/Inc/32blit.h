@@ -5,6 +5,10 @@
 #include "fatfs.h"
 #include "persistence.h"
 
+static uint8_t battery_vbus_status;
+static uint8_t battery_charge_status;
+static uint8_t battery_fault;
+static float battery;
 
 // Functions defined by user code files
 extern void init();

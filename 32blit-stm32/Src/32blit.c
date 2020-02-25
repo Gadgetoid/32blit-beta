@@ -227,28 +227,28 @@ Rect menu_item_frame (MenuItem item, float screen_width) { return Rect (0, item 
 
 void blit_menu_update(uint32_t time) {
   static uint32_t last_buttons = 0;
-  uint32_t changed_buttons = blit::buttons ^ last_buttons;
-  if(blit::buttons & changed_buttons & blit::Button::DPAD_UP) {
+  uint32_t changed_buttons = blit::api.buttons ^ last_buttons;
+  if(blit::api.buttons & changed_buttons & blit::Button::DPAD_UP) {
     menu_item --;
     
-  } else if (blit::buttons & changed_buttons & blit::Button::DPAD_DOWN) {
+  } else if (blit::api.buttons & changed_buttons & blit::Button::DPAD_DOWN) {
     menu_item ++;
     
   } else {
-    bool button_a = blit::buttons & changed_buttons & blit::Button::A;
+    bool button_a = blit::api.buttons & changed_buttons & blit::Button::A;
     switch(menu_item) {
       case BACKLIGHT:
-        if (blit::buttons & blit::Button::DPAD_LEFT) {
+        if (blit::api.buttons & blit::Button::DPAD_LEFT) {
           persist.backlight -= 1.0f / 256.0f;
-        } else if (blit::buttons & blit::Button::DPAD_RIGHT) {
+        } else if (blit::api.buttons & blit::Button::DPAD_RIGHT) {
           persist.backlight += 1.0f / 256.0f;
         }
         persist.backlight = std::fmin(1.0f, std::fmax(0.0f, persist.backlight));
         break;
       case VOLUME:
-        if (blit::buttons & blit::Button::DPAD_LEFT) {
+        if (blit::api.buttons & blit::Button::DPAD_LEFT) {
           persist.volume -= 1.0f / 256.0f;
-        } else if (blit::buttons & blit::Button::DPAD_RIGHT) {
+        } else if (blit::api.buttons & blit::Button::DPAD_RIGHT) {
           persist.volume += 1.0f / 256.0f;
         }
         persist.volume = std::fmin(1.0f, std::fmax(0.0f, persist.volume));
@@ -274,7 +274,7 @@ void blit_menu_update(uint32_t time) {
     }
   }
 
-  last_buttons = blit::buttons;
+  last_buttons = blit::api.buttons;
 }
 
 void blit_menu_render(uint32_t time) {
@@ -297,7 +297,7 @@ void blit_menu_render(uint32_t time) {
 
   screen.text("bat", minimal_font, Point(screen_width / 2, 5));
   uint16_t battery_meter_width = 55;
-  battery_meter_width = float(battery_meter_width) * (blit::battery - 3.0f) / 1.1f;
+  battery_meter_width = float(battery_meter_width) * (battery - 3.0f) / 1.1f;
   battery_meter_width = std::max((uint16_t)0, std::min((uint16_t)55, battery_meter_width));
 
   screen.pen = bar_background_color;
@@ -384,20 +384,20 @@ void blit_menu() {
 }
 
 void blit_update_vibration() {
-    __HAL_TIM_SetCompare(&htim4, TIM_CHANNEL_1, vibration * 2000.0f);
+    __HAL_TIM_SetCompare(&htim4, TIM_CHANNEL_1, blit::api.vibration * 2000.0f);
 }
 
 void blit_update_led() {
     // RED Led
-    float compare_r = (LED.r * 10000) / 255;
+    float compare_r = (blit::api.LED.r * 10000) / 255;
     __HAL_TIM_SetCompare(&htim3, TIM_CHANNEL_3, compare_r);
 
     // GREEN Led
-    float compare_g = (LED.g * 10000) / 255;
+    float compare_g = (blit::api.LED.g * 10000) / 255;
     __HAL_TIM_SetCompare(&htim3, TIM_CHANNEL_4, compare_g);
   
     // BLUE Led
-    float compare_b = (LED.b * 10000) / 255;
+    float compare_b = (blit::api.LED.b * 10000) / 255;
     __HAL_TIM_SetCompare(&htim3, TIM_CHANNEL_2, compare_b);
 
     // Backlight
@@ -450,7 +450,7 @@ void blit_process_input() {
   bool joystick_button = false;
 
   // Read buttons
-  blit::buttons =
+  blit::api.buttons =
     (!HAL_GPIO_ReadPin(DPAD_UP_GPIO_Port,     DPAD_UP_Pin)      ? blit::DPAD_UP    : 0) |
     (!HAL_GPIO_ReadPin(DPAD_DOWN_GPIO_Port,   DPAD_DOWN_Pin)    ? blit::DPAD_DOWN  : 0) |
     (!HAL_GPIO_ReadPin(DPAD_LEFT_GPIO_Port,   DPAD_LEFT_Pin)    ? blit::DPAD_LEFT  : 0) |
@@ -474,7 +474,7 @@ void blit_process_input() {
   } else {
     joystick_x = 0;
   }
-  blit::joystick.x = joystick_x / 7168.0f;
+  blit::api.joystick.x = joystick_x / 7168.0f;
 
   int joystick_y = (adc1data[1] >> 1) - 16384;
   joystick_y = std::max(-8192, std::min(8192, joystick_y));
@@ -486,19 +486,19 @@ void blit_process_input() {
   } else {
     joystick_y = 0;
   }
-  blit::joystick.y = -joystick_y / 7168.0f;
+  blit::api.joystick.y = -joystick_y / 7168.0f;
 
-  blit::hack_left = (adc3data[0] >> 1) / 32768.0f;
-  blit::hack_right = (adc3data[1] >> 1)  / 32768.0f;
+  blit::api.hack_left = (adc3data[0] >> 1) / 32768.0f;
+  blit::api.hack_right = (adc3data[1] >> 1)  / 32768.0f;
 
-  blit::battery = 6.6f * adc3data[2] / 65535.0f;
+  battery = 6.6f * adc3data[2] / 65535.0f;
 
   if(blit::now() - last_battery_update > 5000) {
     uint8_t status = bq24295_get_status(&hi2c4);
-    blit::battery_vbus_status = status >> 6; // 00 - Unknown, 01 - USB Host, 10 - Adapter port, 11 - OTG
-    blit::battery_charge_status = (status >> 4) & 0b11; // 00 - Not Charging, 01 - Pre-charge, 10 - Fast Charging, 11 - Charge Termination Done
+    battery_vbus_status = status >> 6; // 00 - Unknown, 01 - USB Host, 10 - Adapter port, 11 - OTG
+    battery_charge_status = (status >> 4) & 0b11; // 00 - Not Charging, 01 - Pre-charge, 10 - Fast Charging, 11 - Charge Termination Done
 
-    blit::battery_fault = bq24295_get_fault(&hi2c4);
+    battery_fault = bq24295_get_fault(&hi2c4);
 
     last_battery_update = blit::now();
   }
@@ -522,21 +522,21 @@ void blit_process_input() {
       tilt_z += acceleration_data_buffer[offset + 2];
     }
 
-    blit::tilt = Vec3(
+    blit::api.tilt = Vec3(
       -(tilt_x / ACCEL_OVER_SAMPLE),
       -(tilt_y / ACCEL_OVER_SAMPLE),
       -(tilt_z / ACCEL_OVER_SAMPLE)
       );
-    blit::tilt.normalize();
+    blit::api.tilt.normalize();
 
     last_tilt_update = blit::now();
   }
 
-  if(blit::buttons & blit::MENU && !(blit_last_buttons & blit::MENU)) {
+  if(blit::api.buttons & blit::MENU && !(blit_last_buttons & blit::MENU)) {
     blit_menu();
   }
 
-  blit_last_buttons = blit::buttons;
+  blit_last_buttons = blit::api.buttons;
   //flip_cycle_count = DWT->CYCCNT - scc;
 }
 
