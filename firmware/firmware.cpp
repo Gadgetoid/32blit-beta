@@ -186,7 +186,9 @@ void mass_storage_overlay(uint32_t time)
 }
 
 void init() {
-  blit::set_screen_mode(ScreenMode::hires);
+  set_screen_mode(ScreenMode::hires);
+  screen.clear();
+
   scan_flash();
   load_file_list();
 
