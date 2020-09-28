@@ -145,18 +145,18 @@ void scan_flash() {
 }
 
 void load_current_game_metadata() {
-    auto &game = games[persist.selected_menu_item];
-    bool loaded;
-    if(game.filename.empty())
-      loaded = parse_flash_metadata(game.offset, selected_game_metadata, true);
-    else
-      loaded = parse_file_metadata(game.filename, selected_game_metadata, true);
+  auto &game = games[persist.selected_menu_item];
+  bool loaded;
+  if(game.filename.empty())
+    loaded = parse_flash_metadata(game.offset, selected_game_metadata, true);
+  else
+    loaded = parse_file_metadata(game.filename, selected_game_metadata, true);
 
-    // no valid metadata, reset
-    if(!loaded) {
-      selected_game_metadata.free_surfaces();
-      selected_game_metadata = BlitGameMetadata();
-    }
+  // no valid metadata, reset
+  if(!loaded) {
+    selected_game_metadata.free_surfaces();
+    selected_game_metadata = BlitGameMetadata();
+  }
 }
 
 void mass_storage_overlay(uint32_t time)
