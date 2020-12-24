@@ -25,6 +25,8 @@ void init() {
     return bytes_read == length;
   };
   
+  another_world::debug = blit::debugf;
+
   another_world::update_screen = [](uint8_t *buffer) {
   };  
 

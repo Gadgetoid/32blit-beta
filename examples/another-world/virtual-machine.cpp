@@ -34,7 +34,7 @@ namespace another_world {
   }
 
   bool (*read_file)(std::string filename, uint32_t offset, uint32_t length, char* buffer) = nullptr;
-  void (*debug)(const char *fmt, ...) = nullptr;
+  int (*debug)(const char *fmt, ...) = nullptr;
   void (*debug_display_update)() = nullptr;
   void (*update_screen)(uint8_t* buffer) = nullptr;
   void (*set_palette)(uint16_t* palette) = nullptr;
