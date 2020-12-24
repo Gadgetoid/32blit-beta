@@ -22,6 +22,7 @@
 #include "main.h"
 #include "stm32h7xx_it.h"
 #include "fatfs.h"
+#include "fatfs_sd.h"
 #include "gpio_defs.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -200,6 +201,7 @@ void PendSV_Handler(void)
 void SysTick_Handler(void)
 {
   /* USER CODE BEGIN SysTick_IRQn 0 */
+  SDTimer_Handler();
 
   /* USER CODE END SysTick_IRQn 0 */
   HAL_IncTick();

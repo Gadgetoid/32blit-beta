@@ -3,6 +3,8 @@
 #include "ff.h"
 #include "spi.h"
 
+extern void SDTimer_Handler();
+
 /* Definitions for MMC/SDC command */
 #define CMD0     (0x40+0)     	/* GO_IDLE_STATE */
 #define CMD1     (0x40+1)     	/* SEND_OP_COND */

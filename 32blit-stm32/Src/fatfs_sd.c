@@ -13,6 +13,11 @@ static volatile DSTATUS Stat = STA_NOINIT;	/* Disk Status */
 static uint8_t CardType;                    /* Type 0:MMC, 1:SDC, 2:Block addressing */
 static uint8_t PowerFlag = 0;				/* Power flag */
 
+ void SDTimer_Handler() {
+	 if(Timer1 > 0) Timer1--;
+	 if(Timer2 > 0) Timer2--;
+ }
+
 /***************************************
  * SPI functions
  **************************************/
