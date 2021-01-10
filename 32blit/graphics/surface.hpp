@@ -113,19 +113,22 @@ namespace blit {
   private:
     void init();
 
-    static Surface *load_from_bmp(File &file, uint8_t *data=nullptr);
-    static Surface *load_from_packed(File &file, uint8_t *data=nullptr, bool readonly=false);
+    static Surface *load_from_bmp(File &file, uint8_t *data, size_t size);
+    static Surface *load_from_packed(File &file, uint8_t *data, size_t size, bool readonly);
 
   public:
     Surface(uint8_t *data, const PixelFormat &format, const Size &bounds);
   
-    static Surface *load(const std::string &filename, uint8_t *data=nullptr);
+    static Surface *load(const std::string &filename, uint8_t *data, size_t size);
+    static Surface *load(const std::string &filename) {return load(filename, nullptr, 0);};
   
-    static Surface *load(const packed_image *image, uint8_t *data=nullptr);
-    static Surface *load(const uint8_t *image, uint8_t *data=nullptr);
+    static Surface *load(const packed_image *image, uint8_t *data, size_t size);
+    static Surface *load(const packed_image *image) {return load(image, nullptr, 0);};
+    static Surface *load(const uint8_t *image, uint8_t *data, size_t size) {return load((packed_image *)image, nullptr, 0);};
+    static Surface *load(const uint8_t *image) {return load((packed_image *)image, nullptr, 0);};
 
     static Surface *load_read_only(const packed_image *image);
-    static Surface *load_read_only(const uint8_t *image);
+    static Surface *load_read_only(const uint8_t *image) {return load_read_only((packed_image *)image);};
 
     bool save(const std::string &filename);
 

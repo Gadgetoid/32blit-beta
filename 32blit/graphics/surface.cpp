@@ -59,7 +59,7 @@ namespace blit {
    *
    * \return `Surface` containing loaded data or `nullptr` if the image was invalid
    */
-  Surface *Surface::load(const packed_image *image, uint8_t *data) {
+  Surface *Surface::load(const packed_image *image, uint8_t *data, size_t size) {
     if(memcmp(image->type, "SPRITEPK", 8) != 0 && memcmp(image->type, "SPRITERW", 8) != 0 && memcmp(image->type, "SPRITERL", 8) != 0)
       return nullptr;
 
@@ -67,16 +67,7 @@ namespace blit {
       return nullptr;
 
     File file((const uint8_t *)image, image->byte_count);
-    return load_from_packed(file, data, true);
-  }
-
-  /**
-   * \overload
-   *
-   * \param data pointer to an image asset
-   */
-  Surface *Surface::load(const uint8_t *image, uint8_t *data) {
-    return load((const packed_image *)image, data);
+    return load_from_packed(file, data, size, false);
   }
 
   /**
@@ -84,7 +75,7 @@ namespace blit {
    *
    * \param filename string filename
    */
-  Surface *Surface::load(const std::string &filename, uint8_t *data) {
+  Surface *Surface::load(const std::string &filename, uint8_t *data, size_t size) {
     File file;
 
     if(!file.open(filename, OpenMode::read))
@@ -95,9 +86,9 @@ namespace blit {
 
     // really a bmp
     if(image.type[0] == 'B' && image.type[1] == 'M')
-      return load_from_bmp(file, data);
+      return load_from_bmp(file, data, size);
 
-    return load_from_packed(file, data);
+    return load_from_packed(file, data, size, false);
   }
 
   /**
@@ -118,16 +109,7 @@ namespace blit {
       return nullptr;
 
     File file((const uint8_t *)image, image->byte_count);
-    return load_from_packed(file, nullptr, true);
-  }
-
-  /**
-   * \overload
-   *
-   * \param data pointer to an image asset
-   */
-  Surface *Surface::load_read_only(const uint8_t *image) {
-    return load_read_only((const packed_image *)image);
+    return load_from_packed(file, nullptr, 0, true);
   }
 
   bool Surface::save(const std::string &filename) {
@@ -586,7 +568,7 @@ namespace blit {
    *
    * \param image
    */
-  Surface *Surface::load_from_packed(File &file, uint8_t *data, bool readonly) {
+  Surface *Surface::load_from_packed(File &file, uint8_t *data, size_t size, bool readonly) {
     packed_image image;
     file.read(0, sizeof(packed_image), (char *)&image);
 
@@ -628,8 +610,12 @@ namespace blit {
       return ret;
     }
 
-    if(!ret->data)
+    if(!ret->data) {
       ret->data = new uint8_t[pixel_format_stride[image.format] * image.width * image.height];
+    }
+    else if (pixel_format_stride[image.format] * image.width * image.height > size) {
+      return nullptr;
+    }
 
     // avoid allocating if in flash
     const uint8_t *image_data, *end;
@@ -736,7 +722,7 @@ namespace blit {
     return ret;
   }
 
-  Surface *Surface::load_from_bmp(File &file, uint8_t *data) {
+  Surface *Surface::load_from_bmp(File &file, uint8_t *data, size_t size) {
     BMPHeader header;
     file.read(0, sizeof(BMPHeader), (char *)&header);
 
@@ -761,8 +747,12 @@ namespace blit {
     }
 
     bool top_down = header.h < 0;
-    if(!data)
+    if(!data) {
       data = new uint8_t[header.image_size];
+    }
+    else if (header.image_size > size) { // Too big for the buffer
+      return nullptr;
+    }
     Size bounds(header.w, top_down ? -header.h : header.h);
 
     auto ret = new Surface(data, format, bounds);
